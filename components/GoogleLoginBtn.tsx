@@ -21,6 +21,9 @@ export const GoogleLoginBtn = () => {
                     });
                     const data = await res.json();
                     console.log('서버에서 받은 JWT:', data);
+                    if (data.access_token) {
+                        localStorage.setItem('access_token', data.access_token);
+                    }
                     router.push('/home');
                 } catch (e) {
                     console.error('서버 요청 실패:', e);
