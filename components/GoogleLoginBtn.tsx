@@ -14,7 +14,7 @@ export const GoogleLoginBtn = () => {
             const { credential } = response;
             if (credential) {
                 try {
-                    const res = await fetch('http://localhost:8000/api/v1/auth/google/decode', {
+                    const res = await fetch('http://58.123.140.217:20004/api/v1/auth/google/decode', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ credential }),
