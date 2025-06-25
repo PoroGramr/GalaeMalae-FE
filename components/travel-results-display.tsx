@@ -249,10 +249,6 @@ export function TravelResultsDisplay({ recommendedDestinations, itineraries, sum
                         {currentDestination.name} 추천 일정
                         <span className="ml-3 text-base font-normal text-gray-500">({nights}박 {days}일)</span>
                       </h3>
-                      <div className="flex items-center space-x-2">
-                        <Hotel className="h-5 w-5 text-sky-500" />
-                        <span className="text-sm font-medium">숙소: 4성급 호텔</span>
-                      </div>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">
                       {answerLabels[summary.q7] || summary.q7} 페이스의 여행 일정입니다.
