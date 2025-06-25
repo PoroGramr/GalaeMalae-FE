@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Sidebar from "../../components/Sidebar";
 
 export default function HomePage() {
   const [user, setUser] = useState<{ email: string; name: string } | null>(null);
@@ -20,18 +21,21 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold mb-4">환영합니다! 구글 로그인에 성공하셨습니다.</h1>
-      {user ? (
-        <div className="text-xl">
-          <div>이메일: {user.email}</div>
-          <div>이름: {user.name}</div>
-        </div>
-      ) : error ? (
-        <div className="text-red-500">{error}</div>
-      ) : (
-        <div>정보를 불러오는 중...</div>
-      )}
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50">
+        <h1 className="text-3xl font-bold mb-4">환영합니다! 구글 로그인에 성공하셨습니다.</h1>
+        {user ? (
+          <div className="text-xl">
+            <div>이메일: {user.email}</div>
+            <div>이름: {user.name}</div>
+          </div>
+        ) : error ? (
+          <div className="text-red-500">{error}</div>
+        ) : (
+          <div>정보를 불러오는 중...</div>
+        )}
+      </div>
     </div>
   );
 } 
