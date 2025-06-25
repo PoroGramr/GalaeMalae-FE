@@ -63,6 +63,12 @@ export function TravelResultsDisplay({ recommendedDestinations, itineraries, sum
       budget: "정보 없음",
     }
   const currentItinerary = itineraries[selectedDestinationId] || []
+  const [showItinerary, setShowItinerary] = useState(false)
+  const [nights, setNights] = useState(2)
+  const [days, setDays] = useState(3)
+  const [customPlan, setCustomPlan] = useState<any[] | null>(null)
+  const [planLoading, setPlanLoading] = useState(false)
+  const [planError, setPlanError] = useState<string | null>(null)
 
   const questionLabels: { [key: string]: string } = {
     q1: "여행 즐거움",
@@ -137,76 +143,111 @@ export function TravelResultsDisplay({ recommendedDestinations, itineraries, sum
           </div>
 
           <div className="lg:col-span-3">
-            <Tabs defaultValue="destinations" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="destinations">추천 여행지</TabsTrigger>
-                <TabsTrigger value="itinerary">추천 일정</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="destinations" className="mt-6">
-                <div className="grid gap-6 md:grid-cols-3">
-                  {recommendedDestinations.map((destination) => (
-                    <Card
-                      key={destination.id}
-                      className={`overflow-hidden cursor-pointer transition-all ${selectedDestinationId === destination.id ? "ring-2 ring-sky-500" : ""}`}
-                      onClick={() => setSelectedDestinationId(destination.id)}
+            <div className="w-full">
+              <div className="grid gap-6 md:grid-cols-3">
+                {recommendedDestinations.map((destination) => (
+                  <Card
+                    key={destination.id}
+                    className={`overflow-hidden cursor-pointer transition-all ${selectedDestinationId === destination.id ? "ring-2 ring-sky-500" : ""}`}
+                    onClick={() => {
+                      setSelectedDestinationId(destination.id)
+                      setShowItinerary(false)
+                    }}
+                  >
+                    <div className="aspect-video relative">
+                      <Image
+                        src={destination.image || "/placeholder.svg"}
+                        alt={destination.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-1 text-sky-500" />
+                        {destination.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm">{destination.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              {/* 여행지 선택 시 일정 추천 버튼 표시 */}
+              {selectedDestinationId && !showItinerary && (
+                <div className="flex justify-center mt-8 items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="nights" className="text-sm">박수</label>
+                    <select
+                      id="nights"
+                      className="border rounded px-2 py-1"
+                      value={nights}
+                      onChange={e => {
+                        const n = Number(e.target.value)
+                        setNights(n)
+                        setDays(n + 1)
+                      }}
                     >
-                      <div className="aspect-video relative">
-                        <Image
-                          src={destination.image || "/placeholder.svg"}
-                          alt={destination.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1 text-sky-500" />
-                          {destination.name}
-                        </CardTitle>
-                        <CardDescription>{destination.climate} 기후</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm">{destination.description}</p>
-                        <div className="mt-3">
-                          <p className="text-xs font-medium text-gray-500 mb-1">추천 활동:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {/* bestFor 속성 사용 */}
-                            {destination.bestFor.map((activity, index) => (
-                              <span
-                                key={index}
-                                className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700"
-                              >
-                                {activity}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="border-t pt-4">
-                        <p className="text-sm flex items-center">
-                          <span className="font-medium mr-1">예산:</span>
-                          {destination.budget === "저렴"
-                            ? "저렴한 편"
-                            : destination.budget === "중간"
-                              ? "중간 수준"
-                              : destination.budget === "높음"
-                                ? "높은 편"
-                                : destination.budget}
-                        </p>
-                      </CardFooter>
-                    </Card>
-                  ))}
+                      {[1,2,3,4,5,6,7].map(n => (
+                        <option key={n} value={n}>{n}박</option>
+                      ))}
+                    </select>
+                    <label htmlFor="days" className="text-sm ml-2">일수</label>
+                    <select
+                      id="days"
+                      className="border rounded px-2 py-1"
+                      value={days}
+                      onChange={e => {
+                        const d = Number(e.target.value)
+                        setDays(d)
+                        setNights(Math.max(1, d - 1))
+                      }}
+                    >
+                      {[2,3,4,5,6,7,8].map(d => (
+                        <option key={d} value={d}>{d}일</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button size="lg" onClick={async () => {
+                    setShowItinerary(true)
+                    setPlanLoading(true)
+                    setPlanError(null)
+                    setCustomPlan(null)
+                    try {
+                      const response = await fetch("https://api.galaemalae.com/api/v1/plan/plan", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "accept": "application/json",
+                        },
+                        body: JSON.stringify({
+                          destination: currentDestination.name,
+                          schedule: `${nights}박${days}일`,
+                        }),
+                      })
+                      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+                      const data = await response.json()
+                      setCustomPlan(data.plan)
+                    } catch (err: any) {
+                      setPlanError("일정 추천에 실패했습니다. 다시 시도해 주세요.")
+                    } finally {
+                      setPlanLoading(false)
+                    }
+                  }}>
+                    {currentDestination.name} 일정 추천 보기
+                  </Button>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="itinerary" className="mt-6">
-                <div>
+              )}
+              {/* 일정 추천 영역 */}
+              {showItinerary && (
+                <div className="mt-10">
                   <div className="bg-white rounded-xl shadow-md p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold">
                         <MapPin className="inline-block h-5 w-5 mr-1 text-sky-500" />
                         {currentDestination.name} 추천 일정
+                        <span className="ml-3 text-base font-normal text-gray-500">({nights}박 {days}일)</span>
                       </h3>
                       <div className="flex items-center space-x-2">
                         <Hotel className="h-5 w-5 text-sky-500" />
@@ -216,54 +257,73 @@ export function TravelResultsDisplay({ recommendedDestinations, itineraries, sum
                     <p className="text-sm text-gray-600 mb-2">
                       {answerLabels[summary.q7] || summary.q7} 페이스의 여행 일정입니다.
                     </p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {/* bestFor 속성 사용 */}
-                      {currentDestination.bestFor.map((activity, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center rounded-full bg-sky-100 px-2 py-1 text-xs font-medium text-sky-700"
-                        >
-                          <Compass className="h-3 w-3 mr-1" /> {activity}
-                        </span>
-                      ))}
-                    </div>
                   </div>
-
-                  <div className="space-y-6">
-                    {currentItinerary.length > 0 ? (
-                      currentItinerary.map((day) => (
-                        <Card key={day.day}>
+                  {/* 일정 추천 API 로딩/에러/결과 처리 */}
+                  {planLoading && <p className="text-center text-gray-500">AI가 일정을 생성중입니다...</p>}
+                  {planError && <p className="text-center text-red-500">{planError}</p>}
+                  {customPlan && (
+                    <div className="space-y-6">
+                      {customPlan.map((day, idx) => (
+                        <Card key={day.day || idx}>
                           <CardHeader>
-                            <CardTitle>Day {day.day}</CardTitle>
+                            <CardTitle>
+                              {day.day ? `${day.day}일차: ` : ''}{day.description || `Day ${day.day}`}
+                            </CardTitle>
                           </CardHeader>
                           <CardContent>
                             <ol className="relative border-l border-gray-200">
-                              {day.activities.map((activity, index) => (
+                              {day.places && day.places.map((place: any, index: number) => (
                                 <li key={index} className="mb-6 ml-4 last:mb-0">
                                   <div className="absolute w-3 h-3 bg-sky-500 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                                  <time className="mb-1 text-sm font-normal leading-none text-gray-500">
-                                    {activity.time}
-                                  </time>
-                                  <h3 className="text-base font-semibold text-gray-900">{activity.title}</h3>
-                                  <p className="text-sm font-normal text-gray-600">{activity.description}</p>
+                                  <h3 className="text-base font-semibold text-gray-900">{place.name}</h3>
+                                  <p className="text-sm text-gray-600">{place.address}</p>
+                                  <p className="text-sm font-normal text-gray-600">{place.activity}</p>
+                                  <p className="text-xs text-gray-400">예상비용: {place.estimated_cost}</p>
                                 </li>
                               ))}
                             </ol>
                           </CardContent>
                         </Card>
-                      ))
-                    ) : (
-                      <p className="text-center text-gray-500">이 여행지에 대한 일정이 없습니다.</p>
-                    )}
-                  </div>
-
+                      ))}
+                    </div>
+                  )}
+                  {/* 기존 일정 데이터는 customPlan이 없을 때만 표시 */}
+                  {!planLoading && !planError && !customPlan && (
+                    <div className="space-y-6">
+                      {currentItinerary.length > 0 ? (
+                        currentItinerary.map((day) => (
+                          <Card key={day.day}>
+                            <CardHeader>
+                              <CardTitle>Day {day.day}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <ol className="relative border-l border-gray-200">
+                                {day.activities.map((activity, index) => (
+                                  <li key={index} className="mb-6 ml-4 last:mb-0">
+                                    <div className="absolute w-3 h-3 bg-sky-500 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                                    <time className="mb-1 text-sm font-normal leading-none text-gray-500">
+                                      {activity.time}
+                                    </time>
+                                    <h3 className="text-base font-semibold text-gray-900">{activity.title}</h3>
+                                    <p className="text-sm font-normal text-gray-600">{activity.description}</p>
+                                  </li>
+                                ))}
+                              </ol>
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <p className="text-center text-gray-500">이 여행지에 대한 일정이 없습니다.</p>
+                      )}
+                    </div>
+                  )}
                   <div className="mt-8 flex justify-center">
                     <Button className="mr-4" onClick={() => setAuthDialogOpen(true)}>일정 저장하기</Button>
                     <Button variant="outline" onClick={() => setAuthDialogOpen(true)}>일정 공유하기</Button>
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
+              )}
+            </div>
           </div>
         </div>
       </div>
