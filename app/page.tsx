@@ -7,6 +7,25 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { questions } from "@/lib/questions"
 import { LandingPage } from "@/components/landing-page" // LandingPage 임포트
 
+// value -> ABCD 변환 매핑 테이블 추가
+const answerMap: { [key: string]: { [key: string]: string } } = {
+  q1: { sightseeing: "A", relaxation: "B" },
+  q2: { beach: "A", mountain_forest: "B" },
+  q3: { solo: "A", friends_colleagues: "B", family: "C", couple: "D" },
+  q4: { warm: "A", pleasant: "B", cool: "C", cold: "D" },
+  q5: { traditional_food: "A", fusion_cuisine: "B", street_food: "C", vegetarian_vegan: "D" },
+  q6: { car_rental: "A", public_transport: "B", walk_bike: "C", tour_bus: "D" },
+  q7: { relaxed: "A", normal: "B", intensive: "C", spontaneous: "D" },
+}
+
+function convertAnswers(answers: { [key: string]: string }) {
+  const mapped: { [key: string]: string } = {}
+  for (const q in answers) {
+    mapped[q] = answerMap[q]?.[answers[q]] || ""
+  }
+  return mapped
+}
+
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(0)
   const [answers, setAnswers] = useState<{ [key: string]: string }>({})
@@ -27,12 +46,14 @@ export default function Home() {
       setRecommendationData(null) // 이전 결과 초기화
 
       try {
-        const response = await fetch("/api/recommend-travel", {
+        // 외부 API로 요청
+        const response = await fetch("https://api.galaemalae.com/api/v1/survey/submit", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "accept": "application/json",
           },
-          body: JSON.stringify(answers),
+          body: JSON.stringify(convertAnswers(answers)),
         })
 
         if (!response.ok) {
@@ -40,7 +61,24 @@ export default function Home() {
         }
 
         const data = await response.json()
-        setRecommendationData({ ...data, summary: answers }) // 답변 요약도 함께 전달
+        // 외부 API 응답(recommendations)을 기존 컴포넌트에 맞게 매핑
+        const recommendedDestinations = (data.recommendations || []).map((item: any, idx: number) => ({
+          id: idx + 1, // 임시 id (API에 id 없음)
+          name: item.name,
+          description: item.description,
+          country: item.country,
+          latitude: item.latitude,
+          longitude: item.longitude,
+          image: "/placeholder.svg", // 이미지 없음 처리
+          climate: "정보 없음", // 기후 정보 없음 처리
+          bestFor: [], // bestFor 없음 처리
+          budget: "정보 없음", // 예산 정보 없음 처리
+        }))
+        setRecommendationData({
+          recommendedDestinations,
+          itineraries: {}, // 외부 API에는 일정 없음
+          summary: answers,
+        })
         setCurrentStep(questions.length) // 결과 페이지로 이동
       } catch (error) {
         console.error("Error submitting form:", error)
