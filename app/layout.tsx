@@ -17,6 +17,8 @@ export default function RootLayout({
       <head>
         <meta name="google-site-verification" content="JMi4-LmY1QSOgbfnHhSwkr8FgnZB8F5lGuygeX7LlI4" />
         <meta name="naver-site-verification" content="c515040db9920af8dbf200ac96478bf69ab15fe8" />
+        <meta property="og:title" content="갈래말래" />
+        <meta property="og:description" content="갈래말래와 함께 여행지 추천부터 일정까지!" />
       </head>
       <body>
           {children}
