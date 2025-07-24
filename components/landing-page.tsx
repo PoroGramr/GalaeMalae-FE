@@ -23,8 +23,8 @@ export function LandingPage({ onStartSurvey }: LandingPageProps) {
 
       {/* Service Description */}
       <p className="mt-6 max-w-3xl text-xl text-gray-700 sm:text-2xl md:text-3xl leading-relaxed">
-        복잡한 여행 계획은 이제 그만! <span className="font-semibold text-sky-600">갈래 말래</span>는 몇 가지 간단한
-        질문을 통해 당신의 여행 스타일을 파악하고, 꿈꾸던 여행을 현실로 만들어 드립니다.
+        복잡한 여행 계획은 이제 그만!<br /> <span className="font-semibold text-sky-600">갈래 말래</span>는 몇 가지 간단한
+        질문을 통해<br/> 당신의 여행 스타일을 파악하고, <br />꿈꾸던 여행을 현실로 만들어 드립니다.
       </p>
 
       {/* Feature Highlights */}
