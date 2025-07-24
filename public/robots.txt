@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap URL 예시 (필요시 수정)
+# Sitemap: https://your-domain.com/sitemap.xml 
