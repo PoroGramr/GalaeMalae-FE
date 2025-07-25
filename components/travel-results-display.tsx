@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { MapPin, Hotel, Compass, Plane } from "lucide-react"
 
@@ -69,6 +69,31 @@ export function TravelResultsDisplay({ recommendedDestinations, itineraries, sum
   const [customPlan, setCustomPlan] = useState<any[] | null>(null)
   const [planLoading, setPlanLoading] = useState(false)
   const [planError, setPlanError] = useState<string | null>(null)
+  const [destinationImages, setDestinationImages] = useState<{ [id: number]: string }>({})
+
+  useEffect(() => {
+    // 여행지별 Unsplash 이미지 fetch
+    const fetchImages = async () => {
+      const newImages: { [id: number]: string } = {}
+      await Promise.all(
+        recommendedDestinations.map(async (dest) => {
+          try {
+            const res = await fetch(
+              `https://api.unsplash.com/search/photos?query=${encodeURIComponent(dest.name)}&client_id=${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}&orientation=landscape&per_page=1`
+            )
+            const data = await res.json()
+            if (data.results && data.results[0]?.urls?.regular) {
+              newImages[dest.id] = data.results[0].urls.regular
+            }
+          } catch (e) {
+            // ignore
+          }
+        })
+      )
+      setDestinationImages(newImages)
+    }
+    if (recommendedDestinations.length > 0) fetchImages()
+  }, [recommendedDestinations])
 
   const questionLabels: { [key: string]: string } = {
     q1: "여행 즐거움",
@@ -156,10 +181,12 @@ export function TravelResultsDisplay({ recommendedDestinations, itineraries, sum
                   >
                     <div className="aspect-video relative">
                       <Image
-                        src={destination.image || "/placeholder.svg"}
+                        src={destinationImages[destination.id] || destination.image || "/placeholder.svg"}
                         alt={destination.name}
                         fill
                         className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        priority={selectedDestinationId === destination.id}
                       />
                     </div>
                     <CardHeader>
