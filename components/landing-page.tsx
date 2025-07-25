@@ -21,6 +21,20 @@ export function LandingPage({ onStartSurvey }: LandingPageProps) {
         </p>
       </div>
 
+      {/* Statistics Section */}
+      <div className="mt-8 mb-12 w-full max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-white p-6 rounded-xl shadow-md text-center">
+            <div className="text-3xl font-bold text-sky-600 mb-2">12,847명</div>
+            <div className="text-sm text-gray-600">지금까지 추천받은 여행자</div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md text-center">
+            <div className="text-3xl font-bold text-sky-600 mb-2">3,291개</div>
+            <div className="text-sm text-gray-600">생성된 여행코스</div>
+          </div>
+        </div>
+      </div>
+
       {/* Service Description */}
       <p className="mt-6 max-w-3xl text-xl text-gray-700 sm:text-2xl md:text-3xl leading-relaxed">
         복잡한 여행 계획은 이제 그만!<br /> <span className="font-semibold text-sky-600">갈래 말래</span>는 몇 가지 간단한
