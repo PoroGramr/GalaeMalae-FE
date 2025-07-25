@@ -2,12 +2,36 @@
 
 import { Button } from "@/components/ui/button"
 import { Plane, MapPin, CalendarCheck, HeartHandshake } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface LandingPageProps {
   onStartSurvey: () => void
 }
 
 export function LandingPage({ onStartSurvey }: LandingPageProps) {
+  const [userCount, setUserCount] = useState<number | null>(null)
+  const [planCount, setPlanCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch('https://api.galaemalae.com/api/v1/survey/submit/count', {
+      headers: { 'accept': 'application/json' },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.count === 'number') setUserCount(data.count)
+      })
+      .catch(() => setUserCount(null))
+
+    fetch('https://api.galaemalae.com/api/v1/plan/create/count', {
+      headers: { 'accept': 'application/json' },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.count === 'number') setPlanCount(data.count)
+      })
+      .catch(() => setPlanCount(null))
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 to-white px-4 py-12 text-center">
       {/* Hero Section */}
@@ -25,12 +49,16 @@ export function LandingPage({ onStartSurvey }: LandingPageProps) {
       <div className="mt-8 mb-12 w-full max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded-xl shadow-md text-center">
-            <div className="text-3xl font-bold text-sky-600 mb-2">12,847명</div>
+            <div className="text-3xl font-bold text-sky-600 mb-2">
+              {userCount !== null ? userCount.toLocaleString() + '명' : '...'}
+            </div>
             <div className="text-sm text-gray-600">지금까지 추천받은 여행자</div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md text-center">
-            <div className="text-3xl font-bold text-sky-600 mb-2">3,291개</div>
-            <div className="text-sm text-gray-600">생성된 여행코스</div>
+            <div className="text-3xl font-bold text-sky-600 mb-2">
+              {planCount !== null ? planCount.toLocaleString() + '개' : '...'}
+            </div>
+            <div className="text-sm text-gray-600">지금까지 생성된 여행코스</div>
           </div>
         </div>
       </div>
