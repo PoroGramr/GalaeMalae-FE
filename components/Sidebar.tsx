@@ -14,7 +14,7 @@ export default function Sidebar() {
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     if (token) {
-      fetch("http://58.123.140.217:20004/api/v1/auth/me", {
+      fetch("https://api.galaemalae.com/api/v1/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => {

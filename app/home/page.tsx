@@ -9,7 +9,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    fetch("http://58.123.140.217:20004/api/v1/auth/me", {
+    fetch("https://api.galaemalae.com/api/v1/auth/me", {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then((res) => {
